@@ -257,6 +257,8 @@ def generate_output(results, license_references, version, template):
         'package_data': converted_packages
     }
 
+    license_references = [license['object'] for key, license in licenses.items() if license['object']]
+
     return template.generate(files=files, license_references=license_references, version=version)
 
 
