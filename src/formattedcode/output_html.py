@@ -188,9 +188,13 @@ def generate_output(results, license_references, version, template):
     """
     # FIXME: This code is highly coupled with actual scans and may not
     # support adding new scans at all
+
+    from licensedcode.cache import get_licenses_db
+
     converted = {}
     converted_infos = {}
     converted_packages = {}
+    licenses = {}
 
     LICENSES = 'license_detections'
     COPYRIGHTS = 'copyrights'
@@ -223,6 +227,12 @@ def generate_output(results, license_references, version, template):
                     'value': license_expression,
                 })
 
+                # FIXME: we should NOT rely on license objects: only use what is in the JSON instead
+                if license_expression not in licenses:
+                    licenses[license_expression] = match
+                    # we were modifying the scan data in place ....
+                    match['object'] = get_licenses_db().get(license_expression)
+
         if results:
             converted[path] = sorted(results, key=itemgetter('start'))
 
@@ -238,6 +248,8 @@ def generate_output(results, license_references, version, template):
 
         if PACKAGES in scanned_file:
             converted_packages[path] = scanned_file[PACKAGES]
+
+        licenses = dict(sorted(licenses.items()))
 
     files = {
         'license_copyright': converted,
